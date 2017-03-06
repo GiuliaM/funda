@@ -3,16 +3,44 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" charset="utf-8">
     <title>Funda</title>
-<!--    <link rel="stylesheet" href="static/style.css">-->
+    <link href="font/Tahoma.ttf" rel="stylesheet">
+    <link rel="stylesheet" href="static/style.css">
 </head>
 
-
 <body>
+    <header>
+        <nav>
+            <a href="#home" id="logo"><img src="img/funda-logo.png"></a>
 
+            <ul>
+               <li><a href="#home">Home</a></li>
+            </ul>
+        </nav>
+    </header>
 
+    <main>
+        <section class="homeScreen" id="home">
+            <div>
+                <form>
+                <h2>Zoek een woning</h2>
 
+                <input type="text" id="user-input-field">
+                <button type="submit" id="submit-search">Zoek</button>
+                </form>
+            </div>
 
+            <article id="queryResult">
+            </article>
+        </section>
 
+        <section id="details">
+            <article id="showDetails">
+            </article>
+        </section>
+    </main>
+
+<script src="static/lib/aja-min.js"></script>
+<script src="static/lib/routie.js"></script>
 <script src="static/config.js"></script>
 <script src="static/app.js"></script>
 </body>
