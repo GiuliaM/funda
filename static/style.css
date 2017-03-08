@@ -7,7 +7,8 @@
 }
 */
 
-body{
+body {
+    background-color: #E6F2F7;
     box-sizing: border-box;
     display: flex;
     flex-direction: row;
@@ -16,6 +17,11 @@ body{
     font-size: 1em;
     margin: 0;
     padding: 0;
+}
+
+p {
+    color: black;
+    padding: 0.2em;
 }
 
 /* sections */
@@ -103,7 +109,7 @@ div {
     padding-top: 0.7em;
 }
 /* Userquery */
-button[type="submit"] {
+button[type="submit"], .quiz label {
     height: 2.7em;
     background-color: #F7A100;
     border: 0;
@@ -135,10 +141,12 @@ article {
     align-items: flex-start;
     flex-basis: 22em;
     margin: 1.5em;
+    padding: 0.5em;
+    background-color: white;
 }
 
 .searchResult h1{
-    background-color: #1EB4F4;
+    background-color: #F7A100;
     padding: 0.4em;
     position: absolute;
 }
@@ -148,9 +156,23 @@ article {
 }
 
 .searchResult img {
-    box-shadow: 5px 3px 9px #1b1b1b;
     height: 18em;
     width: 100%;
+}
+
+/* Quiz */
+.quiz label{
+    margin-bottom: 1em;
+    padding-left: 1.5em;
+    padding-right: 1.5em;
+}
+
+fieldset{
+    border: none;
+}
+
+legend {
+    margin-bottom: 0.5em;
 }
 
 /* detail pagina */

@@ -5,8 +5,14 @@
 // config.apiKey --> still need to connect to the config.js
         searchApi:'http://funda.kyrandia.nl/feeds/Aanbod.svc/json/',
         submitSearch: document.getElementById('submit-search'),
+        submitQuiz: document.getElementById('submit-quiz'),
         detailApi: 'http://funda.kyrandia.nl/feeds/Aanbod.svc/json/detail/',
-        detailSection: document.getElementById('details')
+        detailSection: document.getElementById('details'),
+        queryResult: document.getElementById('queryResult'),
+        showDetails: document.getElementById('showDetails'),
+        roomFilter: document.getElementById('roomFilter'),
+        budgetFilter: document.getElementById('budgetFilter')
+//        metersFilter: document.getElementById('metersFilter')
     }
 
      var app = {
@@ -49,9 +55,11 @@
             aja()
                 .url(apiUrl)
                 .on('success', function(data) {
-//                    sections.overview(data);
-                    self.filter(data);
-//                    console.log(data);
+                    sections.overview(data);
+                    var obj = data.Objects;
+                    self.filterRooms(obj);
+                    self.filterBudget(obj);
+                    console.log(data);
                 })
             .go();
         },
@@ -68,27 +76,70 @@
                 })
                 .go();
         },
+
+        filterRooms: function(data){
+           var self = this;
+            config.roomFilter.addEventListener('change', function() {
+            console.log(this.value);
+
+            var filterValue = this.value;
+            function getFilters(check) {
+                console.log(filterValue);
+                return check.AantalKamers > filterValue;
+            }
+
+            var filterData = data.filter(getFilters);
+            config.queryResult.innerHTML > filterData;
+            sections.filterHtml(filterData);
+            console.log(filterData);
+            self.filterBudget(filterData);
+//            self.filterMeters(filterData);
+
+            })
+          },
+
+        filterBudget: function(data){
+           var self = this;
+            config.budgetFilter.addEventListener('change', function() {
+            console.log(this.value);
+
+            var filterValue = this.value;
+            function getFilters(check) {
+                console.log(filterValue);
+                return check.Koopprijs < filterValue;
+            }
+
+            var filterData = data.filter(getFilters);
+            config.queryResult.innerHTML > filterData;
+            sections.filterHtml(filterData);
+            console.log(filterData);
+            self.filterRooms(filterData);
+//            self.filterMeters(filterData);
+
+            })
+          },
+
+//        filterMeters: function(data){
+//           var self = this;
+//            config.metersFilter.addEventListener('change', function() {
+//            console.log(this.value);
 //
-        filter: function(data){
-
-            function getKamers(kamers) {
-                return kamers.AantalKamers >= 5;
-            }
-
-            var filterdata = data.Objects.filter(getKamers);
-            console.log(filterdata);
-            return sections.overview(filterdata);
-            }
-
+//            var filterValue = this.value;
+//            function getFilters(check) {
+//                console.log(filterValue);
+//                return check.Woonoppervlakte > filterValue;
+//            }
+//
+//            var filterData = data.filter(getFilters);
+//            config.queryResult.innerHTML > filterData;
+//            sections.filterHtml(filterData);
+//            console.log(filterData);
+//            self.filterRooms(filterData);
+//            self.filterBudget(filterData);
+//
+//            })
+//          }
     };
-
-
-//            document.getElementById('queryResult').innerHTML = filterdata
-//                .map(function(info, i) {
-//                    return getData.filter(info, i);
-//                });
-//        }
-//    };
 
     var sections = {
         overview: function(data) {
@@ -97,14 +148,14 @@
             var html = '';
 
             // With this function you tell what you want to show when a query is requested.
-            data.map(function(element) {
-                    console.log(element);
+            data.Objects.map(function(element) {
+//                    console.log(element);
             //snipet no foto
 
-                html += '<div class="searchResult" id="' + element.Id + '"> <a href="#home/' + element.Id + '"><h1>' + element.Adres + '</h1><h1>' + element.AantalKamers + '</h1> <img src= "' + element.FotoLarge + '"/> </div></a>';
+                html += '<div class="searchResult" id="' + element.Id + '"> <a href="#home/' + element.Id + '"><h1>' + element.Adres + '</h1> <img src= "' + element.FotoLarge + '"/> <p>€ ' + element.Koopprijs + ' k.k.</p><p>Aantal kamers: ' + element.AantalKamers + '</p><p> Woonoppervlakte: ' + element.Woonoppervlakte + ' m² </p></div></a>';
             });
 
-            document.getElementById('queryResult').innerHTML = html;
+            config.queryResult.innerHTML = html;
         },
 
         details: function(detail) {
@@ -113,42 +164,19 @@
 
             //snippet no foto
 
-            htmlDetail += '<div class="detailResult" id="' + detail.Id + '"><img src= "' + detail.HoofdFoto + '"/> <div class="detailBlok"> <h1>' + detail.Adres + '</h1> <h2>Omschrijving</h2><p>'+ detail.VolledigeOmschrijving +'</p> <h2>Koopprijs</h2><p>'+ detail.Koopprijs +'</p> <h2>Soort woning</h2><p>'+ detail.SoortWoning +'</p> <h2>Aantal kamers</h2><p>'+ detail.AantalKamers +'</p> <h2>Energielabel</h2><p>'+ detail.Energielabel.Label +'</p><a href="#home"> Go back to overview</a> </div> </div>';
+            htmlDetail += '<div class="detailResult" id="' + detail.Id + '"><img src= "' + detail.HoofdFoto + '"/> <div class="detailBlok"> <h1>' + detail.Adres + '</h1> <h2>Omschrijving</h2><p>'+ detail.VolledigeOmschrijving +'</p> <h2>Koopprijs</h2><p>'+ detail.Koopprijs +'</p> <h2>Soort woning</h2><p>'+ detail.SoortWoning +'</p> <h2>Aantal kamers</h2><p>'+ detail.AantalKamers +'</p> <h2>Energielabel</h2><a href="#home"> Go back to overview</a> </div> </div>';
 
-            document.getElementById('showDetails').innerHTML = htmlDetail;
-
+            config.showDetails.innerHTML = htmlDetail;
         },
 
+        filterHtml: function(data){
+            var html = '';
+          data.map(function(filterArray) {
+            html += '<div class="searchResult" id="' + filterArray.Id + '"> <a href="#home/' + filterArray.Id + '"><h1>' + filterArray.Adres + '</h1><img src= "' + filterArray.FotoLarge + '"/><p>€ ' + filterArray.Koopprijs + ' k.k.</p><p>Aantal kamers: ' + filterArray.AantalKamers + '</p><p> Woonoppervlakte: ' + filterArray.Woonoppervlakte + ' m² </p></div></a>';
+          });
 
-
-//        filter: function(filterdata) {
-//            //render html with data
-//            var htmlFilter = '';
-//
-//            //snippet no foto
-//
-//            filterDetail += '<div class="detailResult" id="' + detail.Id + '"><img src= "' + detail.HoofdFoto + '"/> <div class="detailBlok"> <h1>' + detail.Adres + '</h1> <h2>Omschrijving</h2><p>'+ detail.VolledigeOmschrijving +'</p> <h2>Koopprijs</h2><p>'+ detail.Koopprijs +'</p> <h2>Soort woning</h2><p>'+ detail.SoortWoning +'</p> <h2>Aantal kamers</h2><p>'+ detail.AantalKamers +'</p><a href="#movies"> Go back to overview</a> </div> </div>';
-//
-//            document.getElementById('showDetails').innerHTML = htmlFilter;
-//
-//
-//            function(data) {
-////                function getKamers(kamers) {
-////                    return kamers.AantalKamers >= 7;
-////                console.log(kamers);
-////            }
-////
-////            var filterdata = data.Objects.filter(getKamers);
-////            document.getElementById('overview').innerHTML = filterdata
-////                .map(function(info, i) {
-////                    return sections.filter(info, i);
-////                });
-////        }
-//
-//
-//
-//
-//        },
+            config.queryResult.innerHTML = html;
+        },
 
         toggle: function(route /* this is location.hash */ ) {
             var sections = document.querySelectorAll('main section');
@@ -180,11 +208,6 @@
 
 
 
-
-
-
-
-
 /* Snippets */
 
 /* no foto
@@ -195,3 +218,72 @@
         fotoPath = element.HoofdFoto;
     }
 */
+
+
+
+
+
+
+
+
+
+
+
+
+//---------------------------------------
+
+//        filter: function(filterdata) {
+//            //render html with data
+//            var htmlFilter = '';
+//
+//            //snippet no foto
+//
+//            filterDetail += '<div class="detailResult" id="' + detail.Id + '"><img src= "' + detail.HoofdFoto + '"/> <div class="detailBlok"> <h1>' + detail.Adres + '</h1> <h2>Omschrijving</h2><p>'+ detail.VolledigeOmschrijving +'</p> <h2>Koopprijs</h2><p>'+ detail.Koopprijs +'</p> <h2>Soort woning</h2><p>'+ detail.SoortWoning +'</p> <h2>Aantal kamers</h2><p>'+ detail.AantalKamers +'</p><a href="#movies"> Go back to overview</a> </div> </div>';
+//
+//            document.getElementById('showDetails').innerHTML = htmlFilter;
+//
+//
+//            function(data) {
+////                function getKamers(kamers) {
+////                    return kamers.AantalKamers >= 7;
+////                console.log(kamers);
+////            }
+////
+////            var filterdata = data.Objects.filter(getKamers);
+////            document.getElementById('overview').innerHTML = filterdata
+////                .map(function(info, i) {
+////                    return sections.filter(info, i);
+////                });
+////        }
+//
+//
+//
+//
+//        },
+
+
+
+
+
+
+
+
+//            var filterdata = data.Objects.filter(getFilters);
+//            console.log(filterdata);
+//            return sections.overview(filterdata);
+//            }
+
+
+//        filter: function(data){
+//    console.log(data)
+//    el.rooms.addEventListener('change', function() {
+//      console.log(this.value);
+//      var filterValue = this.value;
+//      function getFilters(check) {
+//        console.log(filterValue);
+//        return check.AantalKamers > filterValue;
+//      }
+//      var filterData = data.Objects.filter(getFilters);
+//      el.queryResult.innerHTML > filterData;
+//      sections.renderFilter(filterData);
+//      console.log(filterData);
