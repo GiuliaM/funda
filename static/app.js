@@ -16,6 +16,7 @@
 //        metersFilter: document.getElementById('metersFilter')
     }
 
+
      var app = {
         init: function() {
             //If you click on the search button, start function getUserQuery
@@ -50,7 +51,8 @@
             var self = this;
             var searchInput = document.getElementById('user-input-field').value;
             var apiUrl = config.searchApi + apiKey + '/?type=koop&zo=/' + searchInput + '&page=1&pagesize=25';
-console.log(apiUrl);
+            console.log(apiUrl);
+
             aja()
                 .url(apiUrl)
                 .on('success', function(data) {
@@ -58,7 +60,7 @@ console.log(apiUrl);
                     var obj = data.Objects;
                     self.filterRooms(obj);
                     self.filterBudget(obj);
-//                    window.location = 'http://oege.ie.hva.nl/~meermag001/minor/funda/' + '#queryResult';
+                    location.hash = '#queryResult';
                 })
             .go();
         },
