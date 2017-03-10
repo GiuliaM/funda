@@ -9,6 +9,7 @@
         detailApi: 'http://funda.kyrandia.nl/feeds/Aanbod.svc/json/detail/',
         detailSection: document.getElementById('details'),
         queryResult: document.getElementById('queryResult'),
+        suggestResult: document.getElementById('suggestResult'),
         showDetails: document.getElementById('showDetails'),
         roomFilter: document.getElementById('roomFilter'),
         budgetFilter: document.getElementById('budgetFilter')
@@ -21,6 +22,7 @@
             config.submitSearch.addEventListener('click', function() {
 //                event.preventDefault();
                 getData.overview();
+                getData.suggest();
             });
 
             routes.init();
@@ -32,13 +34,11 @@
             routie({
                 'home': function() {
                     sections.toggle(location.hash);
-//                    console.log('Youre at the homepage');
                 },
 
                 'home/:id': function(id) {
                     sections.toggle(location.hash);
                     getData.details(id);
-//                    console.log('Youre at the detailpage');
                 }
             });
         }
@@ -49,9 +49,8 @@
         overview: function(userQuery) {
             var self = this;
             var searchInput = document.getElementById('user-input-field').value;
-
             var apiUrl = config.searchApi + apiKey + '/?type=koop&zo=/' + searchInput + '&page=1&pagesize=25';
-
+console.log(apiUrl);
             aja()
                 .url(apiUrl)
                 .on('success', function(data) {
@@ -59,10 +58,32 @@
                     var obj = data.Objects;
                     self.filterRooms(obj);
                     self.filterBudget(obj);
-                    console.log(data);
+//                    window.location = 'http://oege.ie.hva.nl/~meermag001/minor/funda/' + '#queryResult';
                 })
             .go();
         },
+
+      suggest: function(data) {
+          var self = this;
+            //makes sure api url has the right userquery and adds the value of the selected option
+            var searchInput = document.getElementById('user-input-field').value;
+            var apiUrl = config.searchApi + apiKey + '/?type=koop&zo=/' + searchInput + '/+5km/' +  '&page=1&pagesize=5';
+
+            console.log(apiUrl);
+
+            aja()
+            .url(apiUrl)
+            .on('success', function(suggestArray){
+
+              console.log('suggest api is loaded');
+                console.log(suggestArray);
+
+                sections.suggestHtml(suggestArray);
+
+            })
+            .go();
+      },
+
 
         details: function(id) {
             // call to api movie detail by id
@@ -80,7 +101,6 @@
         filterRooms: function(data){
            var self = this;
             config.roomFilter.addEventListener('change', function() {
-            console.log(this.value);
 
             var filterValue = this.value;
             function getFilters(check) {
@@ -117,28 +137,9 @@
 //            self.filterMeters(filterData);
 
             })
-          },
+          }
 
-//        filterMeters: function(data){
-//           var self = this;
-//            config.metersFilter.addEventListener('change', function() {
-//            console.log(this.value);
-//
-//            var filterValue = this.value;
-//            function getFilters(check) {
-//                console.log(filterValue);
-//                return check.Woonoppervlakte > filterValue;
-//            }
-//
-//            var filterData = data.filter(getFilters);
-//            config.queryResult.innerHTML > filterData;
-//            sections.filterHtml(filterData);
-//            console.log(filterData);
-//            self.filterRooms(filterData);
-//            self.filterBudget(filterData);
-//
-//            })
-//          }
+//        Snippet filterMeters
     };
 
     var sections = {
@@ -152,7 +153,7 @@
 //                    console.log(element);
             //snipet no foto
 
-                html += '<div class="searchResult" id="' + element.Id + '"> <a href="#home/' + element.Id + '"><h1>' + element.Adres + '</h1> <img src= "' + element.FotoLarge + '"/> <p>€ ' + element.Koopprijs + ' k.k.</p><p>Aantal kamers: ' + element.AantalKamers + '</p><p> Woonoppervlakte: ' + element.Woonoppervlakte + ' m² </p></div></a>';
+                html += '<div class="searchResult" id="' + element.Id + '"> <a href="#home/' + element.Id + '"><img src= "' + element.FotoLarge + '"/><h3>' + element.Adres + ' - ' + element.Woonplaats + '</h3><p>€ ' + element.Koopprijs + ' k.k.</p><p>Aantal kamers: ' + element.AantalKamers + '</p><p> Woonoppervlakte: ' + element.Woonoppervlakte + ' m² </p></div></a>';
             });
 
             config.queryResult.innerHTML = html;
@@ -164,7 +165,7 @@
 
             //snippet no foto
 
-            htmlDetail += '<div class="detailResult" id="' + detail.Id + '"><img src= "' + detail.HoofdFoto + '"/> <div class="detailBlok"> <h1>' + detail.Adres + '</h1> <h2>Omschrijving</h2><p>'+ detail.VolledigeOmschrijving +'</p> <h2>Koopprijs</h2><p>'+ detail.Koopprijs +'</p> <h2>Soort woning</h2><p>'+ detail.SoortWoning +'</p> <h2>Aantal kamers</h2><p>'+ detail.AantalKamers +'</p> <h2>Energielabel</h2><a href="#home"> Go back to overview</a> </div> </div>';
+            htmlDetail += '<div class="detailResult" id="' + detail.Id + '"><h1>' + detail.Adres + ' - ' + detail.Plaats + '</h1><a href="#home"> Terug naar het overzicht</a> <div class="detailImg"><img src= "' + detail.HoofdFoto + '"/></div> <div class="detailBlok"><h1>Kenmerken</h1><h2>Koopprijs</h2><p>€'+ detail.Koopprijs +'</p> <h2>Soort woning</h2><p>'+ detail.SoortWoning +'</p> <h2>Aantal kamers</h2><p>'+ detail.AantalKamers +'</p></div> <h2>Omschrijving</h2><div class="detailP"><p>'+ detail.VolledigeOmschrijving +'</p></div> </div>';
 
             config.showDetails.innerHTML = htmlDetail;
         },
@@ -172,10 +173,19 @@
         filterHtml: function(data){
             var html = '';
           data.map(function(filterArray) {
-            html += '<div class="searchResult" id="' + filterArray.Id + '"> <a href="#home/' + filterArray.Id + '"><h1>' + filterArray.Adres + '</h1><img src= "' + filterArray.FotoLarge + '"/><p>€ ' + filterArray.Koopprijs + ' k.k.</p><p>Aantal kamers: ' + filterArray.AantalKamers + '</p><p> Woonoppervlakte: ' + filterArray.Woonoppervlakte + ' m² </p></div></a>';
+            html += '<div class="searchResult" id="' + filterArray.Id + '"> <a href="#home/' + filterArray.Id + '"><img src= "' + filterArray.FotoLarge + '"/><h3>' + filterArray.Adres + ' - ' + filterArray.Woonplaats + '</h3><p>€ ' + filterArray.Koopprijs + ' k.k.</p><p>Aantal kamers: ' + filterArray.AantalKamers + '</p><p> Woonoppervlakte: ' + filterArray.Woonoppervlakte + ' m² </p></div></a>';
           });
 
             config.queryResult.innerHTML = html;
+        },
+
+        suggestHtml: function(data) {
+            var html = '';
+          data.Objects.map(function(suggestArray) {
+            html += '<div class="searchResult suggestResult" id="' + suggestArray.Id + '"> <a href="#home/' + suggestArray.Id + '"><h3>' + suggestArray.Adres + ' - ' + suggestArray.Woonplaats + '</h3><img src= "' + suggestArray.FotoLarge + '"/><p>€ ' + suggestArray.Koopprijs + ' k.k.</p><p>Aantal kamers: ' + suggestArray.AantalKamers + '</p><p> Woonoppervlakte: ' + suggestArray.Woonoppervlakte + ' m² </p></div></a>';
+          });
+
+          config.suggestResult.innerHTML = html;
         },
 
         toggle: function(route /* this is location.hash */ ) {
@@ -220,8 +230,30 @@
 */
 
 
+/*  filterMeters
 
+        filterMeters: function(data){
+           var self = this;
+            config.metersFilter.addEventListener('change', function() {
+            console.log(this.value);
 
+            var filterValue = this.value;
+            function getFilters(check) {
+                console.log(filterValue);
+                return check.Woonoppervlakte > filterValue;
+            }
+
+            var filterData = data.filter(getFilters);
+            config.queryResult.innerHTML > filterData;
+            sections.filterHtml(filterData);
+            console.log(filterData);
+            self.filterRooms(filterData);
+            self.filterBudget(filterData);
+
+            })
+          }
+
+*/
 
 
 
